@@ -18,6 +18,8 @@ class User(models.Model):
     first_name = models.CharField(max_length=128)
     last_name = models.CharField(max_length=128)
     birth_date = models.DateField(null=True)
+
+    groups = models.ManyToManyField('Group', related_name='groups')
     genres = models.ManyToManyField(Genre)
     
     @property

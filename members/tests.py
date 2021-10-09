@@ -11,7 +11,13 @@ from .models import User, Group
 
 some_date = dt.date(1980, 1, 1)
 
+
 class UserModelTests(TestCase):
+    @classmethod
+    def setUpTestData(cls):
+        cls.jim = User.objects.create(first_name='Jim', last_name='Halpert',
+                 display_name='OfficeJimmy123', birth_date=some_date)
+
     def test_clean_model(self):
         """
         Check clean model.
@@ -44,10 +50,27 @@ class UserModelTests(TestCase):
         with self.assertRaisesRegexp(ValidationError, "birth_date"):
             u.full_clean()
 
-    # def test_optional_fields(self):
-    #     """
-    #     Check optional fields.
-    #     """
+    def test_optional_fields(self):
+        """
+        Check optional fields.
+        """
+        pass
+
+    def test_can_add_groups(self):
+        g1 =  Group.objects.create(name="Supergroup")
+        self.jim.groups.add(g1)
+        self.assertEqual(None, self.jim.full_clean())
+        self.assertEqual(1, self.jim.groups.count())
+
+        g2 =  Group.objects.create(name="Local H")
+        self.jim.groups.add(g2)
+        self.assertEqual(None, self.jim.full_clean())
+        self.assertEqual(2, self.jim.groups.count())
+
+        # Entries are unique
+        self.jim.groups.add(g2)
+        self.assertEqual(None, self.jim.full_clean())
+        self.assertEqual(2, self.jim.groups.count())
 
 
 class GroupModelTests(TestCase):
