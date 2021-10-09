@@ -2,7 +2,7 @@ from django.db import models
 
 # Create your models here.
 
-class Person(models.Model):
+class User(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -26,7 +26,7 @@ class Group(models.Model):
     started_date = models.DateField(null=True)
 
     name = models.CharField(max_length=256)
-    members = models.ManyToManyField(Person)
+    members = models.ManyToManyField(User)
     # genres = models.ManyToManyField(Genre)
 
     class Meta:
