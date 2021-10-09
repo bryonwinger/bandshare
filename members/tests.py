@@ -7,12 +7,11 @@ from django.core.exceptions import ValidationError
 
 # Create your tests here.
 
-from .models import User
+from .models import User, Group
 
 some_date = dt.date(1980, 1, 1)
 
 class UserModelTests(TestCase):
-
     def test_clean_model(self):
         """
         Check clean model.
@@ -49,3 +48,53 @@ class UserModelTests(TestCase):
     #     """
     #     Check optional fields.
     #     """
+
+
+class GroupModelTests(TestCase):
+    @classmethod
+    def setUpTestData(cls):
+        cls.jim = User.objects.create(first_name='Jim', last_name='Halpert',
+                 display_name='OfficeJimmy123', birth_date=some_date)
+        cls.rose = User.objects.create(first_name='Rose', last_name='Thorn',
+                 display_name='rthorn88', birth_date=some_date)
+
+        cls.group = Group.objects.create(name="Supergroup")
+
+    def test_clean_model(self):
+        """
+        Check clean model.
+        """
+        g = Group(name='The Beatless')
+        self.assertEqual(None, g.full_clean())
+
+    def test_required_fields(self):
+        """
+        Check required fields.
+        """
+        g = Group(name=None)
+        with self.assertRaisesRegexp(ValidationError, "name"):
+            g.full_clean()
+
+    def test_can_add_member_to_group(self):
+        "Can add a member (User) to a Group."
+        self.group.members.add(self.jim)
+        self.assertEqual(None, self.group.full_clean())
+        self.assertEqual(1, self.group.members.count())
+
+    def test_can_add_unique_members_to_group(self):
+        "Can add additional members (User) to a Group only if they are unique."
+        self.group.members.clear()
+        self.assertEqual(0, self.group.members.count())
+
+        self.group.members.add(self.jim)
+        self.assertEqual(None, self.group.full_clean())
+        self.assertEqual(1, self.group.members.count())
+
+        self.group.members.add(self.rose)
+        self.assertEqual(None, self.group.full_clean())
+        self.assertEqual(2, self.group.members.count())
+
+        # Will be ignored
+        self.group.members.add(self.rose)
+        self.assertEqual(None, self.group.full_clean())
+        self.assertEqual(2, self.group.members.count())

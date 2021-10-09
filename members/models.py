@@ -1,4 +1,5 @@
 from django.db import models
+from django.utils.timezone import now
 
 # Create your models here.
 
@@ -34,7 +35,7 @@ class User(models.Model):
 class Group(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-    started_date = models.DateField(null=True)
+    started_date = models.DateField(default=now)
 
     name = models.CharField(max_length=256)
     members = models.ManyToManyField(User)
