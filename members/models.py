@@ -12,12 +12,19 @@ class User(models.Model):
     birth_date = models.DateField(null=True)
     # genres = models.ManyToManyField(Genre)
     
+    @property
+    def full_name(self):
+        "Returns the full name."
+        return f"{self.first_name} {self.last_name}"
+
+    def __str__(self):
+        return self.full_name
+
     # gender = models.OneToOneField(Gender)
     # set_lists = models.CharField(max_length=64)
 
     # class Meta:
     #     def full_name(self):
-    #         return f"{self.first_name} {self.last_name}"
 
 
 class Group(models.Model):
@@ -29,16 +36,14 @@ class Group(models.Model):
     members = models.ManyToManyField(User)
     # genres = models.ManyToManyField(Genre)
 
-    class Meta:
-        ordering = ['name']
+    def __str__(self):
+        return self.name
 
-        def __str__(self):
-            return self.title
 
 
 # class Genre(models.Model):
 #     name = models.CharField(max_length=128, unique=True)
 
 
-# class Instruments(models.Model):
+# class Instrument(models.Model):
 #    name = models.CharField(max_length=64)
