@@ -2,6 +2,13 @@ from django.db import models
 
 # Create your models here.
 
+class Genre(models.Model):
+    name = models.CharField(max_length=128, unique=True)
+
+    def __str__(self):
+        return self.name
+
+
 class User(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -10,7 +17,7 @@ class User(models.Model):
     first_name = models.CharField(max_length=128)
     last_name = models.CharField(max_length=128)
     birth_date = models.DateField(null=True)
-    # genres = models.ManyToManyField(Genre)
+    genres = models.ManyToManyField(Genre)
     
     @property
     def full_name(self):
@@ -23,9 +30,6 @@ class User(models.Model):
     # gender = models.OneToOneField(Gender)
     # set_lists = models.CharField(max_length=64)
 
-    # class Meta:
-    #     def full_name(self):
-
 
 class Group(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
@@ -34,15 +38,7 @@ class Group(models.Model):
 
     name = models.CharField(max_length=256)
     members = models.ManyToManyField(User)
-    # genres = models.ManyToManyField(Genre)
-
-    def __str__(self):
-        return self.name
-
-
-
-# class Genre(models.Model):
-#     name = models.CharField(max_length=128, unique=True)
+    genres = models.ManyToManyField(Genre)
 
 
 # class Instrument(models.Model):
