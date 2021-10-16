@@ -1,6 +1,8 @@
 from django.db import models
 from django.utils.timezone import now
 
+from dateutil import relativedelta
+
 # Create your models here.
 
 class Genre(models.Model):
@@ -21,7 +23,14 @@ class User(models.Model):
 
     groups = models.ManyToManyField('Group', related_name='groups')
     genres = models.ManyToManyField(Genre)
-    
+
+    @property
+    def age(self):
+        "Returns the number of years between birth_date and today."
+        today = now().date()
+        delta = relativedelta.relativedelta(today, self.birth_date)
+        return delta.years
+
     @property
     def full_name(self):
         "Returns the full name."

@@ -72,6 +72,21 @@ class UserModelTests(TestCase):
         self.assertEqual(None, self.jim.full_clean())
         self.assertEqual(2, self.jim.groups.count())
 
+    def test_full_name(self):
+        first = self.jim.first_name
+        last = self.jim.last_name
+        self.assertEqual(self.jim.full_name, f"{first} {last}")
+
+    def test_age(self):
+        today = dt.datetime.now().date()
+        y, m, d = today.year, today.month, today.day
+
+        for i in range(1, 20):
+            new_year = today.year - (i * 3)
+            new_date = dt.date(new_year, today.month, today.day)
+            u = User(birth_date=new_date)
+            self.assertEqual(u.age, i * 3)
+
 
 class GroupModelTests(TestCase):
     @classmethod
