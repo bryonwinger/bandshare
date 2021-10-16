@@ -6,7 +6,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('members', '0001_initial'),
+        ('bandshare', '0001_initial'),
     ]
 
     operations = [
@@ -24,11 +24,11 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='group',
             name='genres',
-            field=models.ManyToManyField(to='members.Genre'),
+            field=models.ManyToManyField(to='bandshare.Genre'),
         ),
         migrations.AddField(
             model_name='user',
             name='genres',
-            field=models.ManyToManyField(to='members.Genre'),
+            field=models.ManyToManyField(to='bandshare.Genre'),
         ),
     ]

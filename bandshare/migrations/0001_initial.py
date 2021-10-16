@@ -31,7 +31,7 @@ class Migration(migrations.Migration):
                 ('updated_at', models.DateTimeField(auto_now=True)),
                 ('started_date', models.DateField(null=True)),
                 ('name', models.CharField(max_length=256)),
-                ('members', models.ManyToManyField(to='members.User')),
+                ('members', models.ManyToManyField(to='bandshare.User')),
             ],
             options={
                 'ordering': ['name'],

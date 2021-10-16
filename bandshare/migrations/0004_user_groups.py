@@ -6,13 +6,13 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('members', '0003_alter_group_started_date'),
+        ('bandshare', '0003_alter_group_started_date'),
     ]
 
     operations = [
         migrations.AddField(
             model_name='user',
             name='groups',
-            field=models.ManyToManyField(related_name='groups', to='members.Group'),
+            field=models.ManyToManyField(related_name='groups', to='bandshare.Group'),
         ),
     ]

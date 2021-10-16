@@ -7,7 +7,7 @@ import django.utils.timezone
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('members', '0002_auto_20211008_2243'),
+        ('bandshare', '0002_auto_20211008_2243'),
     ]
 
     operations = [
