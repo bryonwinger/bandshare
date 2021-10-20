@@ -3,15 +3,6 @@ from django.utils.timezone import now
 
 from dateutil import relativedelta
 
-# Create your models here.
-
-class Genre(models.Model):
-    name = models.CharField(max_length=128, unique=True)
-
-    def __str__(self):
-        return self.name
-
-
 class User(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -22,7 +13,7 @@ class User(models.Model):
     birth_date = models.DateField(null=True)
 
     groups = models.ManyToManyField('Group', related_name='groups')
-    genres = models.ManyToManyField(Genre)
+    genres = models.ManyToManyField('Genre')
 
     @property
     def age(self):
@@ -41,17 +32,3 @@ class User(models.Model):
 
     # gender = models.OneToOneField(Gender)
     # set_lists = models.CharField(max_length=64)
-
-
-class Group(models.Model):
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
-    started_date = models.DateField(default=now)
-
-    name = models.CharField(max_length=256)
-    members = models.ManyToManyField(User)
-    genres = models.ManyToManyField(Genre)
-
-
-# class Instrument(models.Model):
-#    name = models.CharField(max_length=64)
