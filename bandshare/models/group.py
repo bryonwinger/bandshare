@@ -7,5 +7,8 @@ class Group(models.Model):
     started_date = models.DateField(default=now)
 
     name = models.CharField(max_length=256)
+    description = models.CharField(max_length=1024, blank=True)
+    bio = models.CharField(max_length=8192, blank=True)
+
     members = models.ManyToManyField('User')
     genres = models.ManyToManyField('Genre')

@@ -17,7 +17,8 @@ class UserModelTests(TestCase):
     @classmethod
     def setUpTestData(cls):
         cls.jim = User.objects.create(first_name='Jim', last_name='Halpert',
-                 display_name='OfficeJimmy123', birth_date=some_date)
+                 display_name='OfficeJimmy123', birth_date=some_date,
+                 description="One cool guy", bio="Meet Jim...")
 
     def test_clean_model(self):
         """
@@ -50,12 +51,6 @@ class UserModelTests(TestCase):
                  display_name='bill_nye', birth_date=None)
         with self.assertRaisesRegexp(ValidationError, "birth_date"):
             u.full_clean()
-
-    def test_optional_fields(self):
-        """
-        Check optional fields.
-        """
-        pass
 
     def test_can_add_groups(self):
         g1 =  Group.objects.create(name="Supergroup")
@@ -113,7 +108,8 @@ class GroupModelTests(TestCase):
         cls.rose = User.objects.create(first_name='Rose', last_name='Thorn',
                  display_name='rthorn88', birth_date=some_date)
 
-        cls.group = Group.objects.create(name="Supergroup")
+        cls.group = Group.objects.create(name="Supergroup", description='A super group',
+                                         bio='A band started so long ago...')
 
     def test_clean_model(self):
         """
