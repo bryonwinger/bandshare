@@ -4,11 +4,13 @@ import datetime as dt
 from django.test import TestCase
 from django.core.exceptions import ValidationError
 
+from bandshare.models.group import GroupMembership
+
 # from django.utils import timezone
 
 # Create your tests here.
 
-from .models import User, Group, Genre, Location, Instrument
+from .models import User, Group, GroupMembership, Genre, Location, Instrument
 
 some_date = dt.date(1980, 1, 1)
 
@@ -20,8 +22,8 @@ class UserModelTests(TestCase):
                  display_name='OfficeJimmy123', birth_date=some_date,
                  description="One cool guy", bio="Meet Jim...")
 
-        cls.group1 = Group.objects.create(name="Supergroup")
-        cls.group2 = Group.objects.create(name="Local H")
+        cls.group1 = Group.objects.create(name="Supergroup", created_by=cls.jim)
+        cls.group2 = Group.objects.create(name="Local H", created_by=cls.jim)
 
         cls.genre1 = Genre.objects.create(name="Rock")
         cls.genre2 = Genre.objects.create(name="Pop")
@@ -64,11 +66,11 @@ class UserModelTests(TestCase):
             u.full_clean()
 
     def test_can_add_groups(self):
-        self.jim.groups.add(self.group1)
+        self.jim.groups.add(self.group1, through_defaults={'role': 'Singer'})
         self.assertEqual(None, self.jim.full_clean())
         self.assertEqual(1, self.jim.groups.count())
 
-        self.jim.groups.add(self.group2)
+        self.jim.groups.add(self.group2, through_defaults={'role': 'Banjoist'})
         self.assertEqual(None, self.jim.full_clean())
         self.assertEqual(2, self.jim.groups.count())
 
@@ -135,7 +137,7 @@ class GroupModelTests(TestCase):
                  display_name='rthorn88', birth_date=some_date)
 
         cls.group = Group.objects.create(name="Supergroup", description='A super group',
-                                         bio='A band started so long ago...')
+                                         bio='A band started so long ago...', created_by=cls.jim)
 
         cls.location = Location.objects.create(state='California', city='Beverly Hills', postal_code='90210')
 
@@ -144,40 +146,48 @@ class GroupModelTests(TestCase):
         """
         Check clean model.
         """
-        g = Group(name='The Beatless', location = self.location)
+        g = Group(name='The Beatless', location = self.location, created_by=self.jim)
         self.assertEqual(None, g.full_clean())
 
     def test_required_fields(self):
         """
         Check required fields.
         """
-        g = Group(name=None)
+        g1 = Group(name=None, created_by=self.jim)
         with self.assertRaisesRegexp(ValidationError, "name"):
-            g.full_clean()
+            g1.full_clean()
+
+        g2 = Group(name='My Group', created_by=None)
+        with self.assertRaisesRegexp(ValidationError, "created_by"):
+            g2.full_clean()
 
     def test_can_add_member_to_group(self):
         "Can add a member (User) to a Group."
-        self.group.members.add(self.jim)
+        self.group.members.add(self.jim, through_defaults={'role': 'Banjoist'})
         self.assertEqual(None, self.group.full_clean())
         self.assertEqual(1, self.group.members.count())
+        self.assertIn({'user': self.jim, 'role': 'Banjoist'}, self.group.member_roles)
 
     def test_can_add_unique_members_to_group(self):
         "Can add additional members (User) to a Group only if they are unique."
         self.group.members.clear()
         self.assertEqual(0, self.group.members.count())
 
-        self.group.members.add(self.jim)
+        self.group.members.add(self.jim, through_defaults={'role': 'Banjoist'})
         self.assertEqual(None, self.group.full_clean())
         self.assertEqual(1, self.group.members.count())
 
-        self.group.members.add(self.rose)
+        self.group.members.add(self.rose, through_defaults={'role': 'Manager'})
         self.assertEqual(None, self.group.full_clean())
         self.assertEqual(2, self.group.members.count())
+        self.assertIn({'user': self.rose, 'role': 'Manager'}, self.group.member_roles)
 
         # Will be ignored
         self.group.members.add(self.rose)
         self.assertEqual(None, self.group.full_clean())
         self.assertEqual(2, self.group.members.count())
+        # Role did not change
+        self.assertIn({'user': self.jim, 'role': 'Banjoist'}, self.group.member_roles)
 
     def test_can_add_genres_to_group(self):
         g1 = Genre.objects.create(name="Rock")
@@ -256,7 +266,6 @@ class InstrumentModelTests(TestCase):
     @classmethod
     def setUpTestData(cls):
         cls.guitar = Instrument.objects.create(name='Lead Guitar')
-        cls.drums = Instrument.objects.create(name='Drums')
 
     def test_clean_model(self):
         """

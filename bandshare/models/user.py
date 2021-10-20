@@ -14,7 +14,8 @@ class User(models.Model):
     description = models.CharField(max_length=512, default='', blank=True)
     bio = models.CharField(max_length=4096, default='', blank=True)
 
-    groups = models.ManyToManyField('Group')
+    groups = models.ManyToManyField('Group', through='GroupMembership')
+
     genres = models.ManyToManyField('Genre')
     instruments = models.ManyToManyField('Instrument', blank=True)
     location = models.ForeignKey('Location', on_delete=models.SET_NULL, blank=True, null=True)
