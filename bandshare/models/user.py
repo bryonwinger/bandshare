@@ -16,6 +16,7 @@ class User(models.Model):
 
     groups = models.ManyToManyField('Group')
     genres = models.ManyToManyField('Genre')
+    instruments = models.ManyToManyField('Instrument', blank=True)
     location = models.ForeignKey('Location', on_delete=models.SET_NULL, blank=True, null=True)
 
     @property
@@ -32,6 +33,3 @@ class User(models.Model):
 
     def __str__(self):
         return self.full_name
-
-    # gender = models.OneToOneField(Gender)
-    # set_lists = models.CharField(max_length=64)

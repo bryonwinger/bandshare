@@ -8,7 +8,7 @@ from django.core.exceptions import ValidationError
 
 # Create your tests here.
 
-from .models import User, Group, Genre, Location
+from .models import User, Group, Genre, Location, Instrument
 
 some_date = dt.date(1980, 1, 1)
 
@@ -20,7 +20,15 @@ class UserModelTests(TestCase):
                  display_name='OfficeJimmy123', birth_date=some_date,
                  description="One cool guy", bio="Meet Jim...")
 
+        cls.group1 = Group.objects.create(name="Supergroup")
+        cls.group2 = Group.objects.create(name="Local H")
+
+        cls.genre1 = Genre.objects.create(name="Rock")
+        cls.genre2 = Genre.objects.create(name="Pop")
+
         cls.location = Location.objects.create(state='California', city='Beverly Hills', postal_code='90210')
+        cls.instrument1 = Instrument.objects.create(name='Guitar')
+        cls.instrument2 = Instrument.objects.create(name='Voice')
 
     def test_clean_model(self):
         """
@@ -28,7 +36,7 @@ class UserModelTests(TestCase):
         """
         u = User(first_name='Bill', last_name='Nye',
                  display_name='bill_nye', birth_date=some_date,
-                 location=self.location )
+                 location=self.location)
         self.assertEqual(None, u.full_clean())
 
     def test_required_fields(self):
@@ -56,18 +64,16 @@ class UserModelTests(TestCase):
             u.full_clean()
 
     def test_can_add_groups(self):
-        g1 =  Group.objects.create(name="Supergroup")
-        self.jim.groups.add(g1)
+        self.jim.groups.add(self.group1)
         self.assertEqual(None, self.jim.full_clean())
         self.assertEqual(1, self.jim.groups.count())
 
-        g2 =  Group.objects.create(name="Local H")
-        self.jim.groups.add(g2)
+        self.jim.groups.add(self.group2)
         self.assertEqual(None, self.jim.full_clean())
         self.assertEqual(2, self.jim.groups.count())
 
         # Entries are unique
-        self.jim.groups.add(g2)
+        self.jim.groups.add(self.group2)
         self.assertEqual(None, self.jim.full_clean())
         self.assertEqual(2, self.jim.groups.count())
 
@@ -87,18 +93,16 @@ class UserModelTests(TestCase):
             self.assertEqual(u.age, i * 3)
 
     def test_can_add_genres(self):
-        g1 = Genre.objects.create(name="Rock")
-        self.jim.genres.add(g1)
+        self.jim.genres.add(self.genre1)
         self.assertEqual(None, self.jim.full_clean())
         self.assertEqual(1, self.jim.genres.count())
 
-        g2 = Genre.objects.create(name="Pop")
-        self.jim.genres.add(g2)
+        self.jim.genres.add(self.genre2)
         self.assertEqual(None, self.jim.full_clean())
         self.assertEqual(2, self.jim.genres.count())
 
         # Entries are unique
-        self.jim.genres.add(g2)
+        self.jim.genres.add(self.genre1)
         self.assertEqual(None, self.jim.full_clean())
         self.assertEqual(2, self.jim.genres.count())
 
@@ -106,6 +110,20 @@ class UserModelTests(TestCase):
         self.jim.location = self.location
         self.assertEqual(None, self.jim.full_clean())
         self.assertEqual(self.jim.location, self.location)
+
+    def test_can_add_instruments(self):
+        self.jim.instruments.add(self.instrument1)
+        self.assertEqual(None, self.jim.full_clean())
+        self.assertEqual(1, self.jim.instruments.count())
+
+        self.jim.instruments.add(self.instrument2)
+        self.assertEqual(None, self.jim.full_clean())
+        self.assertEqual(2, self.jim.instruments.count())
+
+        # Entries are unique
+        self.jim.instruments.add(self.instrument2)
+        self.assertEqual(None, self.jim.full_clean())
+        self.assertEqual(2, self.jim.instruments.count())
 
 
 class GroupModelTests(TestCase):
@@ -232,3 +250,22 @@ class LocationModelTests(TestCase):
     def test_can_create_with_different_state(self):
         loc = Location(state='Another State', city=self.beverly_hills.city, postal_code=self.beverly_hills.postal_code)
         self.assertEqual(None, loc.full_clean())
+
+
+class InstrumentModelTests(TestCase):
+    @classmethod
+    def setUpTestData(cls):
+        cls.guitar = Instrument.objects.create(name='Lead Guitar')
+        cls.drums = Instrument.objects.create(name='Drums')
+
+    def test_clean_model(self):
+        """
+        Check clean model.
+        """
+        instrument = Instrument(name='Tenor Singer')
+        self.assertEqual(None, instrument.full_clean())
+
+    def test_is_unique(self):
+        instrument = Instrument(name=self.guitar.name)
+        with self.assertRaisesRegexp(ValidationError, "already exists"):
+            instrument.full_clean()
