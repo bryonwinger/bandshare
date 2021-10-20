@@ -21,6 +21,9 @@ class Group(models.Model):
         """Returns a list of each User and their roles."""
         return [{'user': gm.member, 'role': gm.role} for gm in self.groupmembership_set.all()]
 
+    def clean(self):
+        if self.created_by_id and not self.owned_by_id:
+            self.owned_by_id = self.created_by_id
 
 class GroupMembership(models.Model):
     group = models.ForeignKey('Group', on_delete=models.CASCADE)

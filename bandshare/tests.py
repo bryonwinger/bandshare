@@ -148,6 +148,8 @@ class GroupModelTests(TestCase):
         """
         g = Group(name='The Beatless', location = self.location, created_by=self.jim)
         self.assertEqual(None, g.full_clean())
+        # owned_by is added automatically
+        self.assertEqual(g.owned_by, self.jim)
 
     def test_required_fields(self):
         """
