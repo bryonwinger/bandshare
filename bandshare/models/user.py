@@ -11,11 +11,12 @@ class User(models.Model):
     first_name = models.CharField(max_length=128)
     last_name = models.CharField(max_length=128)
     birth_date = models.DateField(null=True)
-    description = models.CharField(max_length=1024, default='', blank=True)
-    bio = models.CharField(max_length=8192, default='', blank=True)
+    description = models.CharField(max_length=512, default='', blank=True)
+    bio = models.CharField(max_length=4096, default='', blank=True)
 
-    groups = models.ManyToManyField('Group', related_name='groups')
+    groups = models.ManyToManyField('Group')
     genres = models.ManyToManyField('Genre')
+    location = models.ForeignKey('Location', on_delete=models.SET_NULL, blank=True, null=True)
 
     @property
     def age(self):

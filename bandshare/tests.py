@@ -8,7 +8,7 @@ from django.core.exceptions import ValidationError
 
 # Create your tests here.
 
-from .models import User, Group, Genre
+from .models import User, Group, Genre, Location
 
 some_date = dt.date(1980, 1, 1)
 
@@ -20,12 +20,15 @@ class UserModelTests(TestCase):
                  display_name='OfficeJimmy123', birth_date=some_date,
                  description="One cool guy", bio="Meet Jim...")
 
+        cls.location = Location.objects.create(state='California', city='Beverly Hills', postal_code='90210')
+
     def test_clean_model(self):
         """
         Check clean model.
         """
         u = User(first_name='Bill', last_name='Nye',
-                 display_name='bill_nye', birth_date=some_date)
+                 display_name='bill_nye', birth_date=some_date,
+                 location=self.location )
         self.assertEqual(None, u.full_clean())
 
     def test_required_fields(self):
@@ -99,6 +102,11 @@ class UserModelTests(TestCase):
         self.assertEqual(None, self.jim.full_clean())
         self.assertEqual(2, self.jim.genres.count())
 
+    def test_can_add_location(self):
+        self.jim.location = self.location
+        self.assertEqual(None, self.jim.full_clean())
+        self.assertEqual(self.jim.location, self.location)
+
 
 class GroupModelTests(TestCase):
     @classmethod
@@ -111,11 +119,14 @@ class GroupModelTests(TestCase):
         cls.group = Group.objects.create(name="Supergroup", description='A super group',
                                          bio='A band started so long ago...')
 
+        cls.location = Location.objects.create(state='California', city='Beverly Hills', postal_code='90210')
+
+
     def test_clean_model(self):
         """
         Check clean model.
         """
-        g = Group(name='The Beatless')
+        g = Group(name='The Beatless', location = self.location)
         self.assertEqual(None, g.full_clean())
 
     def test_required_fields(self):
@@ -166,6 +177,11 @@ class GroupModelTests(TestCase):
         self.assertEqual(None, self.group.full_clean())
         self.assertEqual(2, self.group.genres.count())
 
+    def test_can_add_location(self):
+        self.group.location = self.location
+        self.assertEqual(None, self.group.full_clean())
+        self.assertEqual(self.group.location, self.location)
+
 
 class GenreModelTests(TestCase):
     @classmethod
@@ -183,3 +199,36 @@ class GenreModelTests(TestCase):
         g = Genre(name=self.rock.name)
         with self.assertRaisesRegexp(ValidationError, "name"):
             g.full_clean()
+
+
+class LocationModelTests(TestCase):
+    @classmethod
+    def setUpTestData(cls):
+        cls.beverly_hills = Location.objects.create(state='California', city='Beverly Hills', postal_code='90210')
+        cls.nashville = Location.objects.create(state='Tenneesee', city='Nashville', postal_code='37203')
+        cls.toronto = Location.objects.create(country='Canada', state='Ontario', city='Toronto', postal_code='M4C 3C5')
+
+    def test_clean_model(self):
+        """
+        Check clean model.
+        """
+        loc = Location(state='Some State', city='My City', postal_code='12345')
+        self.assertEqual(None, loc.full_clean())
+
+    def test_is_unique_for_country_state_and_city(self):
+        loc = Location(state=self.beverly_hills.state, city=self.beverly_hills.city,
+                       postal_code=self.beverly_hills.postal_code)
+        with self.assertRaisesRegexp(ValidationError, "already exists"):
+            loc.full_clean()
+
+    def test_can_create_with_different_postal_code(self):
+        loc = Location(state=self.beverly_hills.state, city=self.beverly_hills.city, postal_code='12345')
+        self.assertEqual(None, loc.full_clean())
+
+    def test_can_create_with_different_city(self):
+        loc = Location(state=self.beverly_hills.state, city='Another City', postal_code=self.beverly_hills.postal_code)
+        self.assertEqual(None, loc.full_clean())
+
+    def test_can_create_with_different_state(self):
+        loc = Location(state='Another State', city=self.beverly_hills.city, postal_code=self.beverly_hills.postal_code)
+        self.assertEqual(None, loc.full_clean())
