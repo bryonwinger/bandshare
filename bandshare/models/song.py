@@ -4,7 +4,7 @@ from django.core.validators import MinValueValidator, MaxValueValidator
 
 from datetime import timedelta
 
-class SongKey(models.TextChoices):
+class MusicalKey(models.TextChoices):
     NOT_SPECIFIED = ''
     A_Major = 'A'
     Bb_Major = 'B♭'
@@ -54,27 +54,27 @@ class Song(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     title = models.CharField(max_length=256)
-    release_date = models.DateTimeField(auto_now=True)
-    
-    artist = models.ManyToManyField('Artist')
-    key = models.CharField(max_length=3, choices=SongKey.choices, default=SongKey.NOT_SPECIFIED)
-    time_signature = models.CharField(max_length=4, choices=TimeSignature.choices, default=TimeSignature.Four_Four)
+    release_date = models.DateField(null=True, blank=True)
+
+    artist = models.ForeignKey('Artist', on_delete=models.CASCADE)
+    musical_key = models.CharField(blank=True, max_length=3, choices=MusicalKey.choices, default=MusicalKey.NOT_SPECIFIED)
+    time_signature = models.CharField(blank=True, max_length=4, choices=TimeSignature.choices, default=TimeSignature.NOT_SPECIFIED)
     genres = models.ManyToManyField('Genre')
     bpm = models.IntegerField(validators=[MinValueValidator(MIN_BPM), MaxValueValidator(MAX_BPM)], default=120)
 
-    time_seconds = models.DurationField(
+    duration_seconds = models.DurationField(
         default=timedelta(minutes=3, seconds=0),
         validators=[MaxValueValidator(timedelta(minutes=60))]
     )
 
     def __str__(self):
         return self.title
-    
+
     @property
     def length(self):
         """Returns a string of the song's runtime."""
-        minutes = int(self.time_seconds.total_seconds()) // 60
-        seconds = self.time_seconds.seconds
-        ms = self.time_seconds.microseconds
+        minutes = int(self.duration_seconds.total_seconds()) // 60
+        seconds = self.duration_seconds.seconds
+        ms = self.duration_seconds.microseconds
         return f"{minutes}:{seconds}:{ms}"
 

@@ -10,7 +10,8 @@ from bandshare.models.group import GroupMembership
 
 # Create your tests here.
 
-from .models import User, Group, GroupMembership, Genre, Location, Instrument
+from .models import (User, Group, GroupMembership, Genre, Location, Instrument, Artist, Song, Setlist,
+                    TimeSignature, MusicalKey)
 
 some_date = dt.date(1980, 1, 1)
 
@@ -280,3 +281,92 @@ class InstrumentModelTests(TestCase):
         instrument = Instrument(name=self.guitar.name)
         with self.assertRaisesRegex(ValidationError, "already exists"):
             instrument.full_clean()
+
+
+class ArtistModelTests(TestCase):
+    @classmethod
+    def setUpTestData(cls):
+        cls.dave = Artist.objects.create(name='Dave Matthews Band')
+
+    def test_clean_model(self):
+        """
+        Check clean model.
+        """
+        artist = Artist(name='Beastie Boys')
+        self.assertEqual(None, artist.full_clean())
+
+    def test_required_fields(self):
+        """
+        Check required fields.
+        """
+        artist = Artist(name=None)
+        with self.assertRaisesRegex(ValidationError, "name"):
+            artist.full_clean()
+
+        artist = Artist(name='')
+        with self.assertRaisesRegex(ValidationError, "name"):
+            artist.full_clean()
+
+    def test_is_unique(self):
+        artist = Artist(name=self.dave.name)
+        with self.assertRaisesRegex(ValidationError, "already exists"):
+            artist.full_clean()
+
+
+class SongModelTests(TestCase):
+    @classmethod
+    def setUpTestData(cls):
+        cls.existing_artist = Artist.objects.create(name="Throwing Muses")
+        cls.existing_genre = Genre.objects.create(name="Indie Rock")
+        cls.existing_song = Song.objects.create(title='Bright Yellow Gun', artist=cls.existing_artist)
+
+    def test_clean_model(self):
+        """
+        Check clean model.
+        """
+        title = 'Somewhere Over The Rainbow'
+        song = Song(title=title, artist=self.existing_artist)
+        self.assertEqual(None, song.full_clean())
+        self.assertEqual(None, song.release_date)
+        self.assertEqual(self.existing_artist, song.artist)
+        self.assertEqual('', song.musical_key)
+        self.assertEqual('', song.time_signature)
+        self.assertEqual(120, song.bpm)
+        # self.assertEqual([], song.genres) # TODO: Figure this out
+
+    def test_required_fields(self):
+        """
+        Check required fields.
+        """
+        song = Song(title=None)
+        with self.assertRaisesRegex(ValidationError, "title"):
+            song.full_clean()
+
+        song = Song(title='')
+        with self.assertRaisesRegex(ValidationError, "title"):
+            song.full_clean()
+
+    def test_can_have_many_with_same_title(self):
+        song = Song(title=self.existing_song.title, artist=self.existing_artist)
+        self.assertEqual(None, song.full_clean())
+
+    def test_other_fields(self):
+        title = "Watching Strangers Smile"
+        release_date = dt.date(2019, 12, 4)
+        musical_key = MusicalKey.F_Major
+        time_signature = TimeSignature.Three_Four
+        bpm = 118
+        duration_seconds = dt.timedelta(minutes=3, seconds=15)
+
+        song = Song(title = title, release_date = release_date, musical_key = musical_key,
+                    artist = self.existing_artist, time_signature = time_signature, bpm = bpm,
+                    duration_seconds = duration_seconds)
+        self.assertEqual(None, song.full_clean())
+        #song.genres.add(self.existing_genre)
+
+        self.assertEqual(title, song.title)
+        self.assertEqual(release_date, song.release_date)
+        self.assertEqual(musical_key, song.musical_key)
+        self.assertEqual(time_signature, song.time_signature)
+        self.assertEqual(bpm, song.bpm)
+        self.assertEqual(duration_seconds, song.duration_seconds)
