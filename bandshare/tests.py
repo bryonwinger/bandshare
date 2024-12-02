@@ -47,22 +47,22 @@ class UserModelTests(TestCase):
         """
         u = User(first_name=None, last_name='Nye',
                  display_name='bill_nye', birth_date=some_date)
-        with self.assertRaisesRegexp(ValidationError, "first_name"):
+        with self.assertRaisesRegex(ValidationError, "first_name"):
             u.full_clean()
 
         u = User(first_name='Bill', last_name=None,
                  display_name='bill_nye', birth_date=some_date)
-        with self.assertRaisesRegexp(ValidationError, "last_name"):
+        with self.assertRaisesRegex(ValidationError, "last_name"):
             u.full_clean()
 
         u = User(first_name='Bill', last_name='Nye',
                  display_name=None, birth_date=some_date)
-        with self.assertRaisesRegexp(ValidationError, "display_name"):
+        with self.assertRaisesRegex(ValidationError, "display_name"):
             u.full_clean()
 
         u = User(first_name='Bill', last_name='Nye',
                  display_name='bill_nye', birth_date=None)
-        with self.assertRaisesRegexp(ValidationError, "birth_date"):
+        with self.assertRaisesRegex(ValidationError, "birth_date"):
             u.full_clean()
 
     def test_can_add_groups(self):
@@ -156,11 +156,11 @@ class GroupModelTests(TestCase):
         Check required fields.
         """
         g1 = Group(name=None, created_by=self.jim)
-        with self.assertRaisesRegexp(ValidationError, "name"):
+        with self.assertRaisesRegex(ValidationError, "name"):
             g1.full_clean()
 
         g2 = Group(name='My Group', created_by=None)
-        with self.assertRaisesRegexp(ValidationError, "created_by"):
+        with self.assertRaisesRegex(ValidationError, "created_by"):
             g2.full_clean()
 
     def test_can_add_member_to_group(self):
@@ -227,7 +227,7 @@ class GenreModelTests(TestCase):
 
     def test_name_is_unique(self):
         g = Genre(name=self.rock.name)
-        with self.assertRaisesRegexp(ValidationError, "name"):
+        with self.assertRaisesRegex(ValidationError, "name"):
             g.full_clean()
 
 
@@ -242,25 +242,25 @@ class LocationModelTests(TestCase):
         """
         Check clean model.
         """
-        loc = Location(state='Some State', city='My City', postal_code='12345')
+        loc = Location(name="My Location", state='Some State', city='My City', postal_code='12345')
         self.assertEqual(None, loc.full_clean())
 
     def test_is_unique_for_country_state_and_city(self):
-        loc = Location(state=self.beverly_hills.state, city=self.beverly_hills.city,
+        loc = Location(name="My Location", state=self.beverly_hills.state, city=self.beverly_hills.city,
                        postal_code=self.beverly_hills.postal_code)
-        with self.assertRaisesRegexp(ValidationError, "already exists"):
+        with self.assertRaisesRegex(ValidationError, "already exists"):
             loc.full_clean()
 
     def test_can_create_with_different_postal_code(self):
-        loc = Location(state=self.beverly_hills.state, city=self.beverly_hills.city, postal_code='12345')
+        loc = Location(name="Beverly Hills", state=self.beverly_hills.state, city=self.beverly_hills.city, postal_code='12345')
         self.assertEqual(None, loc.full_clean())
 
     def test_can_create_with_different_city(self):
-        loc = Location(state=self.beverly_hills.state, city='Another City', postal_code=self.beverly_hills.postal_code)
+        loc = Location(name="Beverly Hills", state=self.beverly_hills.state, city='Another City', postal_code=self.beverly_hills.postal_code)
         self.assertEqual(None, loc.full_clean())
 
     def test_can_create_with_different_state(self):
-        loc = Location(state='Another State', city=self.beverly_hills.city, postal_code=self.beverly_hills.postal_code)
+        loc = Location(name="Beverly Hills", state='Another State', city=self.beverly_hills.city, postal_code=self.beverly_hills.postal_code)
         self.assertEqual(None, loc.full_clean())
 
 
@@ -278,5 +278,5 @@ class InstrumentModelTests(TestCase):
 
     def test_is_unique(self):
         instrument = Instrument(name=self.guitar.name)
-        with self.assertRaisesRegexp(ValidationError, "already exists"):
+        with self.assertRaisesRegex(ValidationError, "already exists"):
             instrument.full_clean()
